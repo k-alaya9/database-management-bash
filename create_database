@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Function to create a public database
+create_public_database() {
+    database_name=$1
+    database_path="Databases/$database_name"
+    
+    # Create the database directory
+    mkdir -p "$database_path"
+    
+     #Set owner and group permissions
+    sudo groupadd $database_name
+    sudo usermod -aG "$database_name" "$USER"
+	while IFS= read -r username; do
+    	sudo usermod -aG "$database_name" "$username"
+	done < admins.txt
+    chmod u+rwx,g+rwx,o+rx "$database_path"
+    
+    echo "Public database '$database_name' created successfully."
+}
+
+# Function to create a private database
+create_private_database() {
+    database_name=$1
+    database_path="Databases/$database_name"
+    
+    # Create the database directory
+    mkdir -p "$database_path"
+    
+    # Set owner and group permissions
+    sudo groupadd $database_name
+    sudo usermod -aG "$database_name" "$USER"
+	while IFS= read -r username; do
+    	sudo usermod -aG "$database_name" "$username"
+	done < admins.txt
+    chmod 770 "$database_path"
+    
+    echo "Private database '$database_name' created successfully."
+}
+
+# Main script
+
+# Check if the user is an admin
+is_admin() {
+    grep -q "^$USER$" admins.txt
+    return $?
+}
+
+# Check if the 'Databases' directory exists, create it if not
+if [ ! -d "Databases" ]; then
+    mkdir "Databases"
+fi
+
+# Read the database name from user input
+read -p "Enter the name of the database: " database_name
+
+
+
+# Check if the database name is empty
+if [ -z "$database_name" ]; then
+    echo "Database name cannot be empty."
+    exit 1
+fi
+
+# Check if the database already exists
+if [ -d "Databases/$database_name" ]; then
+    echo "Database '$database_name' already exists."
+    exit 1
+fi
+
+read -p "Enter 1 if you want your dataBase to be public or 2 to be private " access
+
+case "$access" in
+          	1)
+			create_public_database "$database_name"
+			;;
+            	2)
+                	create_private_database "$database_name"
+                	;;
+                *)
+                	echo "your are stupid person "
+                	;;
+          esac

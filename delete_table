@@ -1,0 +1,119 @@
+#!/bin/bash
+
+# Function to delete a table
+delete_table() {
+    database_name=$1
+    table_name=$2
+
+    # Check if the database exists
+    if [ -d "Databases/$database_name" ]; then
+        # Check if the user is an admin or the owner of the database
+        if is_admin || [ "$USER" = "$database_name" ]; then
+            # Check if the table exists
+            if [ -f "Databases/$database_name/$table_name.txt" ]; then
+                # Delete the table file
+                rm "Databases/$database_name/$table_name.txt"
+                echo "Table '$table_name' deleted successfully from database '$database_name'."
+            else
+                echo "Table '$table_name' does not exist in database '$database_name'."
+            fi
+        else
+            echo "You do not have permission to delete tables from the database '$database_name'."
+        fi
+    else
+        echo "Database '$database_name' does not exist."
+    fi
+}
+
+# Function to list all tables in a database
+list_tables() {
+    database_name=$1
+    table_path="Databases/$database_name"
+
+    # Check if the database exists
+    if [ -d "$table_path" ]; then
+        # Check if there are any tables in the database
+        if [ -n "$(ls -A "$table_path")" ]; then
+            echo "Tables in database '$database_name':"
+            ls "$table_path" | sed 's/\.txt$//'
+        else
+            echo "No tables found in database '$database_name'."
+        fi
+    else
+        echo "Database '$database_name' does not exist."
+    fi
+}
+
+
+
+list_databases() {
+    database_path="Databases"
+
+    # Check if the 'Databases' directory exists
+    if [ -d "$database_path" ]; then
+        # Check if there are any databases
+        if [ -n "$(ls -A "$database_path")" ]; then
+            echo "Available databases:"
+            for db in "$database_path"/*; do
+                if [ -d "$db" ]; then
+                    db_name=$(basename "$db")
+
+                    # Check if the user has permission to access the database
+                    if [ -r "$db" ] || [ -x "$db" ] || [ "$(id -Gn | grep -wq 'admins.txt')" ]; then
+                        echo "$db_name"
+                    fi
+                fi
+            done
+        else
+            echo "No databases found."
+        fi
+    else
+        echo "No databases found."
+    fi
+}
+# Check if the user is an admin
+is_admin() {
+    grep -q "^$USER$" admins.txt
+    return $?
+}
+
+# Check if the 'Databases' directory exists
+if [ ! -d "Databases" ]; then
+    echo "No databases found."
+    exit 1
+fi
+
+# List all databases
+echo "Listing all databases:"
+list_databases
+
+# Read the database name from user input
+read -p "Enter the name of the database to delete a table from: " database_name
+
+# Check if the database name is empty
+if [ -z "$database_name" ]; then
+    echo "Database name cannot be empty."
+    exit 1
+fi
+
+# Check if the database exists
+if [ ! -d "Databases/$database_name" ]; then
+    echo "Database '$database_name' does not exist."
+    exit 1
+fi
+
+# List all tables in the selected database
+echo "Listing all tables in database '$database_name':"
+list_tables "$database_name"
+
+# Read the table name from user input
+read -p "Enter the name of the table to delete: " table_name
+
+# Check if the table name is empty
+if [ -z "$table_name" ]; then
+    echo "Table name cannot be empty."
+    exit 1
+fi
+
+# Delete the table
+delete_table "$database_name" "$table_name"

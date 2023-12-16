@@ -1,0 +1,118 @@
+#!/bin/bash
+
+# Function to create a table
+create_table() {
+    database_name=$1
+    table_name=$2
+    num_columns=$3
+
+    # Check if the database exists
+    if [ -d "Databases/$database_name" ]; then
+        # Check if the user is an admin or the owner of the database
+        if is_admin || [ "$USER" = "$database_name" ]; then
+            # Check if the table already exists
+            if [ -f "Databases/$database_name/$table_name.txt" ]; then
+                echo "Table '$table_name' already exists in database '$database_name'."
+            else
+                # Create the table file
+                touch "Databases/$database_name/$table_name.txt"
+                
+                echo -n "ID," >> "Databases/$database_name/$table_name.txt"
+
+                # Prompt the user to enter column names
+                	for ((i=1; i<=num_columns; i++)); do
+    			read -p "Enter the value for column $i: " column_value
+    			if [ "$i" -eq "$num_columns" ]; then
+        		echo  -n "$column_value" >> "Databases/$database_name/$table_name.txt"
+        		else 
+        		echo  -n "$column_value," >> "Databases/$database_name/$table_name.txt"
+        		fi
+				done
+			echo  >> "Databases/$database_name/$table_name.txt"	
+
+                echo "Table '$table_name' created successfully in database '$database_name'."
+            fi
+        else
+            echo "You do not have permission to create tables in the database '$database_name'."
+        fi
+    else
+        echo "Database '$database_name' does not exist."
+    fi
+}
+
+list_databases() {
+    database_path="Databases"
+
+    # Check if the 'Databases' directory exists
+    if [ -d "$database_path" ]; then
+        # Check if there are any databases
+        if [ -n "$(ls -A "$database_path")" ]; then
+            echo "Available databases:"
+            for db in "$database_path"/*; do
+                if [ -d "$db" ]; then
+                    db_name=$(basename "$db")
+
+                    # Check if the user has permission to access the database
+                    if [ -r "$db" ] || [ -x "$db" ] || [ "$(id -Gn | grep -wq 'admins.txt')" ]; then
+                        echo "$db_name"
+                    fi
+                fi
+            done
+        else
+            echo "No databases found."
+        fi
+    else
+        echo "No databases found."
+    fi
+}
+# Check if the user is an admin
+is_admin() {
+    grep -q "^$USER$" admins.txt
+    return $?
+}
+
+# Check if the 'Databases' directory exists
+if [ ! -d "Databases" ]; then
+    echo "No databases found."
+    exit 1
+fi
+
+# List all databases
+echo "Listing all databases:"
+list_databases
+
+# Read the database name from user input
+read -p "Enter the name of the database to create a table in: " database_name
+
+# Check if the database name is empty
+if [ -z "$database_name" ]; then
+    echo "Database name cannot be empty."
+    exit 1
+fi
+
+# Check if the database exists
+if [ ! -d "Databases/$database_name" ]; then
+    echo "Database '$database_name' does not exist."
+    exit 1
+fi
+
+# Read the table name from user input
+read -p "Enter the name of the table to create: " table_name
+
+# Check if the table name is empty
+if [ -z "$table_name" ]; then
+    echo "Table name cannot be empty."
+    exit 1
+fi
+
+# Read the number of columns from user input
+read -p "Enter the number of columns in the table: " num_columns
+
+# Check if the number of columns is valid
+if [[ ! "$num_columns" =~ ^[0-9]+$ ]]; then
+    echo "Invalid number of columns."
+    exit 1
+fi
+
+# Create the table
+create_table "$database_name" "$table_name" "$num_columns"

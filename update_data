@@ -1,0 +1,136 @@
+#!/bin/bash
+
+# Function to check if a user is an admin
+is_admin() {
+    grep -q "^$USER$" admins.txt
+    return $?
+}
+
+
+list_databases() {
+    database_path="Databases"
+
+    # Check if the 'Databases' directory exists
+    if [ -d "$database_path" ]; then
+        # Check if there are any databases
+        if [ -n "$(ls -A "$database_path")" ]; then
+            echo "Available databases:"
+            for db in "$database_path"/*; do
+                if [ -d "$db" ]; then
+                    db_name=$(basename "$db")
+
+                    # Check if the user has permission to access the database
+                    if [ -r "$db" ] || [ -x "$db" ] || [ "$(id -Gn | grep -wq 'admins.txt')" ]; then
+                        echo "$db_name"
+                    fi
+                fi
+            done
+        else
+            echo "No databases found."
+        fi
+    else
+        echo "No databases found."
+    fi
+}
+# Function to list all tables in a database
+list_tables() {
+    database_name=$1
+    table_path="Databases/$database_name"
+
+    # Check if the database exists
+    if [ -d "$table_path" ]; then
+        # Check if there are any tables in the database
+        if [ -n "$(ls -A "$table_path")" ]; then
+            echo "Tables in database '$database_name':"
+            ls "$table_path" | sed 's/\.txt$//'
+        else
+            echo "No tables found in database '$database_name'."
+        fi
+    else
+        echo "Database '$database_name' does not exist."
+    fi
+}
+# Function to update data
+update_data() {
+    database_name=$1
+    table_name=$2
+
+    # Check if the table exists
+    if [ -f "Databases/$database_name/$table_name.txt" ]; then
+        echo "Updating data in table '$table_name' in database '$database_name'."
+
+        # Display all rows in the table for reference
+        echo "Current data in table '$table_name':"
+        cat "Databases/$database_name/$table_name.txt"
+
+        # Prompt for the ID of the row to update
+        read -p "Enter the ID of the row to update: " row_id
+        
+        read -p "Enter the value of the column u want to update:" column_name
+        
+        if grep "$column_name" "Databases/$database_name/$table_name.txt" ; then
+
+        	# Prompt for the new value for the specified column
+        	read -p "Enter the new value for  '$column_name': " new_value
+	
+        	# Update the specified column in the row with the new value
+        	# Define the file path
+		file_path="Databases/$database_name/$table_name.txt"
+
+		# Define the word to be replaced and the new word
+		old_word=$column_name
+		new_word=$new_value
+
+		# Use sed to replace the word in the file
+		sed -i "s/$old_word/$new_word/g" "$file_path"
+
+        	echo "Data updated successfully."
+        	cat "Databases/$database_name/$table_name.txt"
+        else 
+        	echo "invaild value"
+        fi
+    else
+        echo "Table '$table_name' does not exist in database '$database_name'."
+    fi
+}
+
+
+# Check if the 'Databases' directory exists
+if [ ! -d "Databases" ]; then
+    echo "No databases found."
+    exit 1
+fi
+
+# List all databases that the user has access to
+echo "Listing all databases you have access to:"
+list_databases
+
+# Read the database name from user input
+read -p "Enter the name of the database to update data into: " database_name
+
+# Check if the database name is empty
+if [ -z "$database_name" ]; then
+    echo "Database name cannot be empty."
+    exit 1
+fi
+
+# Check if the database exists
+if [ ! -d "Databases/$database_name" ]; then
+    echo "Database '$database_name' does not exist or you do not have access to it."
+    exit 1
+fi
+
+# List all tables in the selected database
+echo "Listing all tables in database '$database_name':"
+list_tables "$database_name"
+
+# Read the table name from user input
+read -p "Enter the name of the table to insert data into: " table_name
+
+# Check if the table name is empty
+if [ -z "$table_name" ]; then
+    echo "Table name cannot be empty."
+    exit 1
+fi
+# update data into the table
+update_data "$database_name" "$table_name"

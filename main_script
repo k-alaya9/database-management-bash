@@ -1,0 +1,55 @@
+#!/bin/bash
+
+operation=""
+
+while [ "$operation" != "0" ]; 
+do 
+	read -p "Welcome $USER to our DataBase Mangement 
+ 	choose what u want to do here 
+ 	Enter 1 to create a database 
+ 	Enter 2 to delete a database
+ 	Enter 3 to empty a database
+ 	Enter 4 to create a table in database
+ 	Enter 5 to delete a table in database
+ 	Enter 6 to insert data into a table in database
+ 	Enter 7 to retive data from a table in database
+ 	Enter 8 to update data from a table in database
+ 	Enter 9 to delete data from a table in database
+ 	Enter 0 to Exit:" operation
+	case "$operation" in
+          	 1)
+                	/bin/bash "./create_database"
+                	;;
+            	2)
+                	/bin/bash "./delete_database"
+                	;;
+            	3)
+            		/bin/bash "./empty_database"
+            		;;
+            	4) 
+            		/bin/bash	"./create_table"
+            		;;
+            	5)
+            		/bin/bash "./delete_table"
+            		;;
+            	6)
+            		/bin/bash "./insert_data"
+            		;;
+            	7)
+            		/bin/bash "./retive_data"
+            		;;
+            	8)
+            		/bin/bash "./update_data"
+            		;;
+            	9)	
+            		/bin/bash "./delete_data"
+            		;;	
+            			
+            	0)
+            		echo "Thank u $USER for using our DataBase Mangement"
+            		;;					    
+            	*)
+            	    echo "Invalid option selected."
+            	    ;;
+       	 esac
+done

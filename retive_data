@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Function to check if a user is an admin
+is_admin() {
+    grep -q "^$USER$" admins.txt
+    return $?
+}
+
+
+list_databases() {
+    database_path="Databases"
+
+    # Check if the 'Databases' directory exists
+    if [ -d "$database_path" ]; then
+        # Check if there are any databases
+        if [ -n "$(ls -A "$database_path")" ]; then
+            echo "Available databases:"
+            for db in "$database_path"/*; do
+                if [ -d "$db" ]; then
+                    db_name=$(basename "$db")
+
+                    # Check if the user has permission to access the database
+                    if [ -r "$db" ] || [ -x "$db" ] || [ "$(id -Gn | grep -wq 'admins.txt')" ]; then
+                        echo "$db_name"
+                    fi
+                fi
+            done
+        else
+            echo "No databases found."
+        fi
+    else
+        echo "No databases found."
+    fi
+}
+# Function to retrieve all table data
+retrieve_all_data() {
+    database_name=$1
+    table_name=$2
+
+    # Check if the table exists
+    if [ -f "Databases/$database_name/$table_name.txt" ]; then
+        echo "Retrieving all data from table '$table_name' in database '$database_name':"
+        cat "Databases/$database_name/$table_name.txt"
+    else
+        echo "Table '$table_name' does not exist in database '$database_name'."
+    fi
+}
+
+# Function to retrieve data based on specific criteria
+retrieve_data_by_criteria() {
+    database_name=$1
+    table_name=$2
+
+    # Check if the table exists
+    if [ -f "Databases/$database_name/$table_name.txt" ]; then
+        read -p "Enter the value to search for: " search_value
+        echo "Retrieving data from table '$table_name' in database '$database_name' based on the criteria '$search_value':"
+        grep "$search_value" "Databases/$database_name/$table_name.txt"
+    else
+        echo "Table '$table_name' does not exist in database '$database_name'."
+    fi
+}
+# Fuction to make the user choose which way to retive the data 
+choose_way(){
+database_name=$1
+# Check if the database exists
+if [ -d "Databases/$database_name" ]; then
+        echo "Retrieving data from private database '$database_name'..."
+        echo "Available tables:"
+        ls "Databases/$database_name" | sed 's/\.txt$//'
+        
+        read -p "Enter the table name: " table_name
+
+        echo -n "Choose an option:
+       	1. Retrieve all table data
+        2. Retrieve data based on specific criteria"
+       read -p "Enter your choice: " option
+
+        case "$option" in
+            1)
+                retrieve_all_data "$database_name" "$table_name"
+                ;;
+            2)
+                retrieve_data_by_criteria "$database_name" "$table_name"
+                ;;
+            *)
+                echo "Invalid option selected."
+                ;;
+        esac
+   
+else
+    echo "Database '$database_name' does not exist."
+fi
+}
+# List all databases that the user has access to
+echo "Listing all databases you have access to:"
+list_databases
+read -p "Enter the database name: " database_name
+choose_way $database_name

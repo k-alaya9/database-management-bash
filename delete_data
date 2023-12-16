@@ -1,0 +1,130 @@
+#!/bin/bash
+
+# Function to check if a user is an admin
+is_admin() {
+    grep -q "^$USER$" admins.txt
+    return $?
+}
+
+
+list_databases() {
+    database_path="Databases"
+
+    # Check if the 'Databases' directory exists
+    if [ -d "$database_path" ]; then
+        # Check if there are any databases
+        if [ -n "$(ls -A "$database_path")" ]; then
+            echo "Available databases:"
+            for db in "$database_path"/*; do
+                if [ -d "$db" ]; then
+                    db_name=$(basename "$db")
+
+                    # Check if the user has permission to access the database
+                    if [ -r "$db" ] || [ -x "$db" ] || [ "$(id -Gn | grep -wq 'admins.txt')" ]; then
+                        echo "$db_name"
+                    fi
+                fi
+            done
+        else
+            echo "No databases found."
+        fi
+    else
+        echo "No databases found."
+    fi
+}
+# Function to list all tables in a database
+list_tables() {
+    database_name=$1
+    table_path="Databases/$database_name"
+
+    # Check if the database exists
+    if [ -d "$table_path" ]; then
+        # Check if there are any tables in the database
+        if [ -n "$(ls -A "$table_path")" ]; then
+            echo "Tables in database '$database_name':"
+            ls "$table_path" | sed 's/\.txt$//'
+        else
+            echo "No tables found in database '$database_name'."
+        fi
+    else
+        echo "Database '$database_name' does not exist."
+    fi
+}
+# Function to delete data
+delete_all_data() {
+    local database=$1
+    local table=$2
+    local table_path="Databases/$database/$table.txt"
+    rm -f "$table_path"
+    echo "All data deleted from $table."
+}
+
+# Function to delete data based on specific criteria
+delete_data_with_criteria() {
+    local database=$1
+    local table=$2
+    local table_path="Databases/$database/$table.txt"
+    cat < "Databases/$database/$table.txt"
+    read -p "Enter the value you want to delete data based on: " value
+    grep -v "^$value" "$table_path" > "$table_path.tmp"
+    mv "$table_path.tmp" "$table_path"
+    echo "Data deleted from $table where value is $value."
+}
+
+
+# Check if the 'Databases' directory exists
+if [ ! -d "Databases" ]; then
+    echo "No databases found."
+    exit 1
+fi
+
+# List all databases that the user has access to
+echo "Listing all databases you have access to:"
+list_databases
+
+# Read the database name from user input
+read -p "Enter the name of the database to delete data into: " database_name
+
+# Check if the database name is empty
+if [ -z "$database_name" ]; then
+    echo "Database name cannot be empty."
+    exit 1
+fi
+
+# Check if the database exists
+if [ ! -d "Databases/$database_name" ]; then
+    echo "Database '$database_name' does not exist or you do not have access to it."
+    exit 1
+fi
+
+# List all tables in the selected database
+echo "Listing all tables in database '$database_name':"
+list_tables "$database_name"
+
+# Read the table name from user input
+read -p "Enter the name of the table to insert data into: " table_name
+
+# Check if the table name is empty
+if [ -z "$table_name" ]; then
+    echo "Table name cannot be empty."
+    exit 1
+fi
+# Choose deletion option
+echo "Choose deletion option:"
+echo "1. Delete all table data"
+echo "2. Delete data based on specific criteria"
+
+read -p "Enter your choice: " choice
+
+case $choice in
+    1)
+        delete_all_data "$database_name" "$table_name"
+        ;;
+    2)
+        delete_data_with_criteria "$database_name" "$table_name"
+        ;;
+    *)
+        echo "Invalid choice."
+        exit 1
+        ;;
+esac
