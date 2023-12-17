@@ -44,8 +44,10 @@ case "$compression_mode" in
         exit 1
         ;;
 esac
+database_name="daily_backup_${selected_database}_$current_date"
+
 # Call rotation script based on backup date : 
-/bin/bash "./rotate_backups_by_date" "Daily" "$selected_database" 
+/bin/bash "./rotate_backups_by_date" "Daily" "$database_name" 
 
 # Call rotation script based on backup size : 
-/bin/bash "./rotate_backups_by_size" "Daily" "$selected_database"
+/bin/bash "./rotate_backups_by_size" "Daily" "$database_name"

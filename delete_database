@@ -21,16 +21,17 @@ delete_database() {
                 echo "Database '$database_name' deleted successfully."
                 # add log
                 /bin/bash "./create_log" "delete_database" "$database_name" "$USER"
-                
-            add_log "$folder_owner" "$current_user" "$database_name"
             else
                 echo "You do not have permission to delete the database '$database_name'. '$USER'"
+                exit 1
             fi
         else
             echo "Database '$database_name' is not empty. Please remove all files before deleting."
+            exit 1
         fi
     else
         echo "Database '$database_name' does not exist."
+        exit 1
     fi
 }
 
@@ -54,9 +55,11 @@ list_databases() {
             done
         else
             echo "No databases found."
+            exit 1
         fi
     else
         echo "No databases found."
+        exit 1
     fi
 }
 

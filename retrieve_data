@@ -26,9 +26,11 @@ list_databases() {
             done
         else
             echo "No databases found."
+            exit 1
         fi
     else
         echo "No databases found."
+        exit 1
     fi
 }
 
@@ -45,6 +47,7 @@ retrieve_all_data() {
        /bin/bash "./create_log" "retrieve_data" "$database_name" "$USER"
     else
         echo "Table '$table_name' does not exist in database '$database_name'."
+        exit 1 
     fi
 }
 
@@ -62,6 +65,7 @@ retrieve_data_by_criteria() {
        /bin/bash "./create_log" "retrieve_data" "$database_name" "$USER"
     else
         echo "Table '$table_name' does not exist in database '$database_name'."
+        exit 1
     fi
 }
 # Fuction to make the user choose which way to retive the data 
@@ -94,6 +98,7 @@ if [ -d "Databases/$database_name" ]; then
    
 else
     echo "Database '$database_name' does not exist."
+    exit 1
 fi
 }
 # List all databases that the user has access to

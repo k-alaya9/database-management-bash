@@ -5,29 +5,40 @@ if [ ! -d "/opt/logs" ]; then
     mkdir "/opt/logs"
 fi
 
-# Function to add log
-add_log() {
-    operation_type=$1
-    database_name=$2
-    current_user=$3
-    folder_owner=$(stat -c '%U' "Databases/$database_name")
-
-    # check if the user is owner or admin or other
-    if [ "$operation_type" = "create database" ]; then
-        user_type="owner"
-    elif [ "$folder_owner" = "$current_user" ]; then
-        user_type="owner"
-    elif is_admin; then
-        user_type="admin"
-    else
-        user_type="other"
-    fi
-
-    # add log
-    log_file="/opt/logs/$database_name.log"
-    log="$operation_type:$database_name $current_user:$user_type $(date)"
-    echo "$log" | sudo tee -a "$log_file" > /dev/null
+# Check if the user is an admin
+is_admin() {
+    grep -q "^$USER$" admins.txt
+    return $?
 }
+
+operation_type=$1
+database_name=$2
+current_user=$3
+    
+# Set default user type to "other"
+user_type="other"
+
+# Check if the operation is "create database"
+if [ "$operation_type" = "create_database" ]; then
+    folder_owner="$current_user"
+    user_type="owner"
+else
+    # Check if the database exists
+    if [ -d "Databases/$database_name" ]; then
+        folder_owner=$(stat -c '%U' "Databases/$database_name")
+
+        # check if the user is owner or admin
+        if [ "$folder_owner" = "$current_user" ]; then
+            user_type="owner"
+        elif is_admin; then
+            user_type="admin"
+        fi
+    fi
+fi
+# add log
+log_file="/opt/logs/$database_name.log"
+log="$operation_type:$database_name $current_user:$user_type $(date)"
+echo "$log" | sudo tee -a "$log_file" > /dev/null
 
 # Schedule the log rotation daily at midnight 
 (crontab -l ; echo "0 0 * * * ./rotate_logs_by_date") | crontab -

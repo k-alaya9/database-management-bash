@@ -11,38 +11,40 @@ create_table() {
     # Get the current user
     current_user=$(id -un)
 
-    # Check if the database exists
-    if [ -d "Databases/$database_name" ]; then
-        # Check if the user is an admin or the owner of the database
-        if is_admin || [ "$folder_owner" = "$current_user" ]; then
-            # Check if the table already exists
-            if [ -f "Databases/$database_name/$table_name.txt" ]; then
-                echo "Table '$table_name' already exists in database '$database_name'."
-            else
-                # Create the table file
-                touch "Databases/$database_name/$table_name.txt"
-                
-                echo -n "ID," >> "Databases/$database_name/$table_name.txt"
-
-                # Prompt the user to enter column names
-                	for ((i=1; i<=num_columns; i++)); do
-    			read -p "Enter the value for column $i: " column_value
-    			if [ "$i" -eq "$num_columns" ]; then
-        		echo  -n "$column_value" >> "Databases/$database_name/$table_name.txt"
-        		else 
-        		echo  -n "$column_value," >> "Databases/$database_name/$table_name.txt"
-        		fi
-				done
-			    echo  >> "Databases/$database_name/$table_name.txt"	
-                echo "Table '$table_name' created successfully in database '$database_name'."
-              # add log
-             /bin/bash "./create_log" "create_table" "$database_name" "$USER"   
+# Check if the database exists
+if [ -d "Databases/$database_name" ]; then
+    # Check if the user is an admin or the owner of the database
+    if is_admin || [ "$folder_owner" = "$current_user" ]; then
+        # Check if the table already exists
+        if [ -f "Databases/$database_name/$table_name.txt" ]; then
+            echo "Table '$table_name' already exists in database '$database_name'."
         else
-            echo "You do not have permission to create tables in the database '$database_name'."
+            # Create the table file
+            touch "Databases/$database_name/$table_name.txt"
+            
+            echo -n "ID," >> "Databases/$database_name/$table_name.txt"
+
+            # Prompt the user to enter column names
+            for ((i=1; i<=num_columns; i++)); do
+                read -p "Enter the value for column $i: " column_value
+                if [ "$i" -eq "$num_columns" ]; then
+                    echo -n "$column_value" >> "Databases/$database_name/$table_name.txt"
+                else 
+                    echo -n "$column_value," >> "Databases/$database_name/$table_name.txt"
+                fi
+            done
+            echo  >> "Databases/$database_name/$table_name.txt"	
+            echo "Table '$table_name' created successfully in database '$database_name'."
+            
+            # add log
+            /bin/bash "./create_log" "create_table" "$database_name" "$USER"
         fi
     else
-        echo "Database '$database_name' does not exist."
+        echo "You do not have permission to create tables in the database '$database_name'."
     fi
+else
+    echo "Database '$database_name' does not exist."
+fi
 }
 
 list_databases() {
@@ -121,5 +123,3 @@ fi
 
 # Create the table
 create_table "$database_name" "$table_name" "$num_columns"
-
-

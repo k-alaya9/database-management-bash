@@ -27,9 +27,11 @@ list_databases() {
             done
         else
             echo "No databases found."
+            exit 1
         fi
     else
         echo "No databases found."
+        exit 1
     fi
 }
 # Function to list all tables in a database
@@ -45,9 +47,11 @@ list_tables() {
             ls "$table_path" | sed 's/\.txt$//'
         else
             echo "No tables found in database '$database_name'."
+            exit 1
         fi
     else
         echo "Database '$database_name' does not exist."
+        exit 1
     fi
 }
 
@@ -91,7 +95,7 @@ echo "Listing all databases you have access to:"
 list_databases
 
 # Read the database name from user input
-read -p "Enter the name of the database to delete data into: " database_name
+read -p "Enter the name of the database to delete data from: " database_name
 
 # Check if the database name is empty
 if [ -z "$database_name" ]; then

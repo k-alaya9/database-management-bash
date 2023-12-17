@@ -23,12 +23,15 @@ delete_table() {
               /bin/bash "./create_log" "delete_table" "$database_name" "$USER"
             else
                 echo "Table '$table_name' does not exist in database '$database_name'."
+                exit 1
             fi
         else
             echo "You do not have permission to delete tables from the database '$database_name'."
+            exit 1
         fi
     else
         echo "Database '$database_name' does not exist."
+        exit 1
     fi
 }
 
@@ -45,9 +48,11 @@ list_tables() {
             ls "$table_path" | sed 's/\.txt$//'
         else
             echo "No tables found in database '$database_name'."
+            exit 1
         fi
     else
         echo "Database '$database_name' does not exist."
+        exit 1
     fi
 }
 
@@ -71,9 +76,11 @@ list_databases() {
             done
         else
             echo "No databases found."
+            exit 1
         fi
     else
         echo "No databases found."
+        exit 1
     fi
 }
 

@@ -9,7 +9,11 @@ if [ ! -d "/opt/Backups/$backup_type" ]; then
     echo "Error: Backup directory '/opt/Backups/$backup_type' not found."
     exit 1
 fi
-
+# Check if there are any backup files
+if [ "$(ls -A)" ]; then
+    echo "No previous backup files found. Rotation by date not needed."
+    exit 0
+fi
 # Check if the database directory exists
 if [ ! -d "/opt/Backups/$backup_type/$selected_database" ]; then
     echo "Error: Database directory '/opt/Backups/$backup_type/$selected_database' not found."
@@ -21,6 +25,3 @@ cd "/opt/Backups/$backup_type/$selected_database" || exit
 
 # List all backup files, sort them by modification time, and keep the most recent ones
 ls -t | tail -n +$((rotation_limit + 1)) | xargs rm -f
-
-echo "Rotation based on backup date completed successfully"
-

@@ -24,9 +24,11 @@ empty_database() {
             fi
         else
             echo "You do not have permission to empty the database '$database_name'."
+            exit 1
         fi
     else
         echo "Database '$database_name' does not exist."
+        exit 1
     fi
 }
 
@@ -50,9 +52,11 @@ list_databases() {
             done
         else
             echo "No databases found."
+            exit 1
         fi
     else
         echo "No databases found."
+        exit 1
     fi
 }
 # Check if the user is an admin

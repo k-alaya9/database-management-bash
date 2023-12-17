@@ -45,6 +45,7 @@ list_tables() {
             ls "$table_path" | sed 's/\.txt$//'
         else
             echo "No tables found in database '$database_name'."
+            exit 1
         fi
     else
         echo "Database '$database_name' does not exist."
@@ -100,12 +101,15 @@ insert_data() {
                /bin/bash "./create_log" "insert_data" "$database_name" "$USER"
             else
                 echo "Table '$table_name' does not exist in database '$database_name'."
+                exit 1
             fi
         else
             echo "You do not have permission to insert data into the database '$database_name'."
+            exit 1
         fi
     else
         echo "Database '$database_name' does not exist."
+        exit 1
     fi
 }
 

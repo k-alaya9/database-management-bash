@@ -27,9 +27,11 @@ list_databases() {
             done
         else
             echo "No databases found."
+            exit 1
         fi
     else
         echo "No databases found."
+        exit 1
     fi
 }
 # Function to list all tables in a database
@@ -45,9 +47,11 @@ list_tables() {
             ls "$table_path" | sed 's/\.txt$//'
         else
             echo "No tables found in database '$database_name'."
+            exit 1
         fi
     else
         echo "Database '$database_name' does not exist."
+        exit 1
     fi
 }
 
@@ -91,9 +95,11 @@ update_data() {
                /bin/bash "./create_log" "update_data" "$database_name" "$USER"
         else 
         	echo "invaild value"
+        	exit 1
         fi
     else
         echo "Table '$table_name' does not exist in database '$database_name'."
+        exit 1
     fi
 }
 
