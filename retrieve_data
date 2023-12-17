@@ -18,22 +18,20 @@ list_databases() {
             for db in "$database_path"/*; do
                 if [ -d "$db" ]; then
                     db_name=$(basename "$db")
-                    # Check if the user is an admin or the owner of the database
-                    if is_admin  [ "$USER" = "$db_name" ]; then
+
+                    # Check if the user has permission to access the database
+                    if [ -r "$db" ] || [ -x "$db" ] || [ "$(id -Gn | grep -wq 'admins.txt')" ]; then
                         echo "$db_name"
                     fi
                 fi
             done
         else
             echo "No databases found."
-            exit 1
         fi
     else
         echo "No databases found."
-        exit 1
     fi
 }
-
 # Function to retrieve all table data
 retrieve_all_data() {
     database_name=$1
