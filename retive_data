@@ -32,6 +32,27 @@ list_databases() {
         echo "No databases found."
     fi
 }
+
+add_log(){
+    # Get the owner of the database folder
+    folder_owner=$(stat -c '%U' "Databases/$database_name")
+    # Get the current user
+    current_user=$(id -un)
+    
+     # check if the user is owner or admin or other
+    if [ "$folder_owner" = "$current_user" ]; then
+    	user_type="owner"
+    elif is_admin; then
+    	user_type="admin"
+    else
+    	user_type="other"
+    fi	
+    
+    # add log
+    log_file="/opt/logs/$database_name.log"
+    log="retrive:$database_name $USER:$user_type $(date)"
+    echo "$log" | sudo tee -a "$log_file" > /dev/null
+}
 # Function to retrieve all table data
 retrieve_all_data() {
     database_name=$1
@@ -41,6 +62,7 @@ retrieve_all_data() {
     if [ -f "Databases/$database_name/$table_name.txt" ]; then
         echo "Retrieving all data from table '$table_name' in database '$database_name':"
         cat "Databases/$database_name/$table_name.txt"
+        add_log "$database_name"
     else
         echo "Table '$table_name' does not exist in database '$database_name'."
     fi
@@ -56,6 +78,7 @@ retrieve_data_by_criteria() {
         read -p "Enter the value to search for: " search_value
         echo "Retrieving data from table '$table_name' in database '$database_name' based on the criteria '$search_value':"
         grep "$search_value" "Databases/$database_name/$table_name.txt"
+        add_log "$database_name"
     else
         echo "Table '$table_name' does not exist in database '$database_name'."
     fi
