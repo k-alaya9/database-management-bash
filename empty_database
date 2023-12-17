@@ -5,10 +5,15 @@ empty_database() {
     database_name=$1
     database_path="Databases/$database_name"
 
+    # Get the owner of the database folder
+    folder_owner=$(stat -c '%U' "Databases/$database_name")
+    # Get the current user
+    current_user=$(id -un)
+
     # Check if the database exists
     if [ -d "$database_path" ]; then
         # Check if the user is an admin or the owner of the database
-        if is_admin || [ "$USER" = "$database_name" ]; then
+        if is_admin || [ "$folder_owner" = "$current_user" ]; then
             # Check if the database is empty
             if [ -z "$(ls -A "$database_path")" ]; then
                 echo "Database '$database_name' is already empty."
