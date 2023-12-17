@@ -41,6 +41,8 @@ retrieve_all_data() {
     if [ -f "Databases/$database_name/$table_name.txt" ]; then
         echo "Retrieving all data from table '$table_name' in database '$database_name':"
         cat "Databases/$database_name/$table_name.txt"
+        # add log
+       /bin/bash "./create_log" "retrieve_data" "$database_name" "$USER"
     else
         echo "Table '$table_name' does not exist in database '$database_name'."
     fi
@@ -56,6 +58,8 @@ retrieve_data_by_criteria() {
         read -p "Enter the value to search for: " search_value
         echo "Retrieving data from table '$table_name' in database '$database_name' based on the criteria '$search_value':"
         grep "$search_value" "Databases/$database_name/$table_name.txt"
+        # add log
+       /bin/bash "./create_log" "retrieve_data" "$database_name" "$USER"
     else
         echo "Table '$table_name' does not exist in database '$database_name'."
     fi

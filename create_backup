@@ -103,4 +103,5 @@ else
             ;;
     esac
 fi
-
+# add log
+/bin/bash "./create_log" "create_backup" "$selected_database" "$USER"

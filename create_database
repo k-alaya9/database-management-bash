@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Function to add log
-add_log(){
-    log_file="/opt/logs/$database_name.log"
-    log="create:$database_name $USER:owner $(date)"
-    echo "$log" | sudo tee -a "$log_file" > /dev/null
-}
 
 # Function to create a public database
 create_public_database() {
@@ -24,8 +18,9 @@ create_public_database() {
     chmod u+rwx,g+rwx,o+rx "$database_path"
     
     echo "Public database '$database_name' created successfully."
+    # add log
+   /bin/bash "./create_log" "create_database" "$database_name" "$USER"
 
-    add_log "$database_name"
 }
 
 # Function to create a private database
@@ -45,8 +40,9 @@ create_private_database() {
     chmod 770 "$database_path"
     
     echo "Private database '$database_name' created successfully."
+    # add log
+   /bin/bash "./create_log" "create_database" "$database_name" "$USER"
     
-    add_log "$database_name"
 }
 
 # Main script
@@ -92,3 +88,4 @@ case "$access" in
                 	echo "your are stupid person "
                 	;;
           esac
+

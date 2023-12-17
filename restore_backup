@@ -48,6 +48,8 @@ restore_database() {
             if [ -d "/opt/Backups/$backup_type/$database_name" ]; then
                 cp -r "/opt/Backups/$backup_type/$database_name" "/Databases/"
                 echo "Database '$database_name' restored successfully from '$backup_type' backup."
+                # add log
+                /bin/bash "./create_log" "restore_backup" "$database_name" "$USER"
                 exit 0
             fi
         done
