@@ -1,0 +1,44 @@
+#!/bin/bash
+
+logs_directory="/opt/logs"
+excel_output_directory="/opt/excel_logs"
+
+# Check if the user is an owner or admin
+is_admin() {
+    grep -q "^$USER$" admins.txt
+    return $?
+}
+
+# Check if the 'logs' directory exists
+if [ ! -d "$logs_directory" ]; then
+    echo "Error: Logs directory '$logs_directory' not found."
+    exit 1
+fi
+
+# Check if the 'excel_logs' directory exists, create it if not
+if [ ! -d "$excel_output_directory" ]; then
+    mkdir "$excel_output_directory"
+fi
+
+# Check if the user is an owner or admin
+if ! is_admin; then
+    echo "Permission denied. Only admins and owners can export logs to Excel."
+    exit 1
+fi
+
+# Export each log file to Excel
+for log_file in "$logs_directory"/*.log; do
+    log_filename=$(basename "$log_file" .log)
+    excel_file="$excel_output_directory/${log_filename}.xlsx"
+
+    # Convert log file to CSV
+    awk -F ':' '{ print $1 "," $2 "," $3 }' "$log_file" > "${log_file}.csv"
+
+    # Import CSV into Excel
+    cat "${log_file}.csv" | tr ',' '\t' > "$excel_file"
+
+    # Remove temporary CSV file
+    rm "${log_file}.csv"
+
+    echo "Log '$log_filename' exported to '$excel_file'."
+done

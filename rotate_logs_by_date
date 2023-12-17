@@ -1,0 +1,28 @@
+#!/bin/bash
+
+log_dir="/opt/logs"
+rotation_days=10
+
+# Check if the log directory exists
+if [ ! -d "$log_dir" ]; then
+    echo "Error: Log directory '$log_dir' not found."
+    exit 1
+fi
+
+# Calculate the cutoff time (in seconds) based on the rotation_days
+cutoff_time=$(date -d "$rotation_days days ago" +%s)
+
+# Change to the log directory
+cd "$log_dir" || exit
+
+# List all log files and check their modification time
+while IFS= read -r log_file; do
+    modification_time=$(stat -c %Y "$log_file")
+
+    # Check if the log file is older than the cutoff time
+    if [ "$modification_time" -lt "$cutoff_time" ]; then
+        rm -f "$log_file"
+    fi
+done < <(find . -maxdepth 1 -type f -name "*.log")
+
+echo "Log rotation based on date completed successfully"

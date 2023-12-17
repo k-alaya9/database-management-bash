@@ -17,6 +17,8 @@ do
  	Enter 9 to delete data from a table in database
  	Enter 10 to create backup for a database 
  	Enter 11 to restore a backup for a database
+ 	Enter 12 to export log files to excel files
+ 	Enter 13 to retrieve logs
  	Enter 0 to Exit:" operation
 	echo $operation
 	case "$operation" in
@@ -52,7 +54,13 @@ do
             		;;  
             	11)
             	        /bin/bash "./restore_backup"
-            		;; 			
+            		;;
+            	12)
+            	        /bin/bash "./export_logs"
+            		;; 	
+            	13)
+            	        /bin/bash "./retrieve_logs"
+            		;; 		
             	0)
             		echo "Thank u $USER for using our Database Mangement"
             		;;					    
