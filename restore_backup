@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Function to check if a database exists in any backup type
+database_exists_in_backup() {
+    database_name=$1
+
+    backup_types=("Daily" "Weekly" "Monthly" "DateSpecific")
+
+    for backup_type in "${backup_types[@]}"; do
+        if [ -d "/opt/Backups/$backup_type/$database_name" ]; then
+            return 0  # Database found in backups
+        fi
+    done
+
+    return 1  # Database not found in any backup type
+}
+
+# Function to confirm database restoration
+confirm_database_restoration() {
+    read -p "Are you sure you want to restore this database? Restoring will overwrite any existing version. (y/n): " choice
+    case "$choice" in
+        y|Y)
+            return 0  # User confirmed
+            ;;
+        n|N)
+            return 1  # User canceled
+            ;;
+        *)
+            echo "Invalid choice. Please enter 'y' for yes or 'n' for no."
+            confirm_database_restoration  # Repeat until a valid choice is made
+            ;;
+    esac
+}
+
+# Function to restore a database
+restore_database() {
+    database_name=$1
+
+    # Check if the database exists in any backup type
+    if database_exists_in_backup "$database_name"; then
+        confirm_database_restoration || exit 0
+
+        # Remove existing database (assuming the database is a directory)
+        rm -rf "/Databases/$database_name"
+
+        # Iterate through backup types and copy the database from the first one found
+        for backup_type in "${backup_types[@]}"; do
+            if [ -d "/opt/Backups/$backup_type/$database_name" ]; then
+                cp -r "/opt/Backups/$backup_type/$database_name" "/Databases/"
+                echo "Database '$database_name' restored successfully from '$backup_type' backup."
+                exit 0
+            fi
+        done
+    else
+        echo "Database '$database_name' not found in any backup type."
+    fi
+}
+
+# Main script
+read -p "Enter the name of the database you want to restore: " database_name
+restore_database "$database_name"
