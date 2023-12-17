@@ -50,6 +50,29 @@ list_tables() {
         echo "Database '$database_name' does not exist."
     fi
 }
+
+# Function to add log
+add_log(){
+    # Get the owner of the database folder
+    folder_owner=$(stat -c '%U' "Databases/$database")
+    # Get the current user
+    current_user=$(id -un)
+
+    # check if the user is owner or admin or other
+    if [ "$folder_owner" = "$current_user" ]; then
+    	user_type="owner"
+    elif is_admin; then
+    	user_type="admin"
+    else
+    	user_type="other"
+    fi	
+    
+    # add log
+    log_file="/opt/logs/$database.log"
+    log="delete_data:$database $USER:$user_type $(date)"
+    echo "$log" | sudo tee -a "$log_file" > /dev/null
+}
+
 # Function to delete data
 delete_all_data() {
     local database=$1
@@ -57,6 +80,8 @@ delete_all_data() {
     local table_path="Databases/$database/$table.txt"
     rm -f "$table_path"
     echo "All data deleted from $table."
+    
+    add_log "$database"
 }
 
 # Function to delete data based on specific criteria
@@ -69,6 +94,8 @@ delete_data_with_criteria() {
     grep -v "^$value" "$table_path" > "$table_path.tmp"
     mv "$table_path.tmp" "$table_path"
     echo "Data deleted from $table where value is $value."
+    
+    add_log "$database"
 }
 
 
