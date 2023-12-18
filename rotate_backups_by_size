@@ -22,7 +22,7 @@ fi
 
 
 # Change to the backup directory
-cd "$backup_dir/$selected_database" || exit
+cd "/opt/Backups/$backup_type/$selected_database" || exit
 
 # Calculate the total size of the backup directory in megabytes
 total_size=$(du -smc . | grep -o -E '^[0-9]+')

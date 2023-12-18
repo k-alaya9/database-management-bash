@@ -10,10 +10,10 @@ create_public_database() {
     mkdir -p "$database_path"
     
     #Set owner and group permissions
-    sudo groupadd $database_name
-    sudo usermod -aG "$database_name" "$USER"
+     groupadd $database_name
+     usermod -aG "$database_name" "$USER"
 	while IFS= read -r username; do
-    	sudo usermod -aG "$database_name" "$username"
+    	 usermod -aG "$database_name" "$username"
 	done < admins.txt
     chmod u+rwx,g+rwx,o+rx "$database_path"
     
@@ -32,10 +32,10 @@ create_private_database() {
     mkdir -p "$database_path"
     
     # Set owner and group permissions
-    sudo groupadd $database_name
-    sudo usermod -aG "$database_name" "$USER"
+     groupadd $database_name
+     usermod -aG "$database_name" "$USER"
 	while IFS= read -r username; do
-    	sudo usermod -aG "$database_name" "$username"
+    	 usermod -aG "$database_name" "$username"
 	done < admins.txt
     chmod 770 "$database_path"
     

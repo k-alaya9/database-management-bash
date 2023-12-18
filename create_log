@@ -38,7 +38,7 @@ fi
 # add log
 log_file="/opt/logs/$database_name.log"
 log="$operation_type:$database_name $current_user:$user_type $(date)"
-echo "$log" | sudo tee -a "$log_file" > /dev/null
+echo "$log" |  tee -a "$log_file" > /dev/null
 
 # Schedule the log rotation daily at midnight 
 (crontab -l ; echo "0 0 * * * ./rotate_logs_by_date") | crontab -

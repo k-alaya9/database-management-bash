@@ -67,36 +67,32 @@ update_data() {
         # Display all rows in the table for reference
         echo "Current data in table '$table_name':"
         cat "Databases/$database_name/$table_name.txt"
+        echo -n "Enter the name of the column to update: "
+	read COLUMN_NAME
 
-        # Prompt for the ID of the row to update
-        read -p "Enter the ID of the row to update: " row_id
-        
-        read -p "Enter the value of the column u want to update:" column_name
-        
-        if grep "$column_name" "Databases/$database_name/$table_name.txt" ; then
+	echo -n "Enter the ID of the row to update: "
+	read ROW_ID
 
-        	# Prompt for the new value for the specified column
-        	read -p "Enter the new value for  '$column_name': " new_value
-	
-        	# Update the specified column in the row with the new value
-        	# Define the file path
-		file_path="Databases/$database_name/$table_name.txt"
+	echo -n "Enter the new value for '$COLUMN_NAME' in row with ID '$ROW_ID': "
+	read NEW_VALUE
 
-		# Define the word to be replaced and the new word
-		old_word=$column_name
-		new_word=$new_value
+	if ! grep -q "$ROW_ID" "Databases/$database_name/$table_name.txt"; then
+    	echo "Row with ID '$ROW_ID' not found in '$TABLE_NAME'."
+    	exit 1
+	fi
 
-		# Use sed to replace the word in the file
-		sed -i "s/$old_word/$new_word/g" "$file_path"
+	COLUMN_INDEX=$(head -n 1 "Databases/$database_name/$table_name.txt" | awk -F',' -v col_name="$COLUMN_NAME" '{ for (i=1; i<=NF; i++) { if ($i == col_name) { print i; exit } } }')
 
-        	echo "Data updated successfully."
-        	cat "Databases/$database_name/$table_name.txt"
-        	# add log
+	if [ -z "$COLUMN_INDEX" ]; then
+    	echo "Column '$COLUMN_NAME' not found in '$table_name'."
+    	exit 1
+	fi
+
+awk -v id="$ROW_ID" -v value="$NEW_VALUE" -v column="$COLUMN_INDEX" 'BEGIN {FS=OFS=","} {if ($1==id) {$column=value;} print}' Databases/$database_name/$table_name.txt > temp && mv temp Databases/$database_name/$table_name.txt
+
+	echo "Data in '$COLUMN_NAME' for row with ID '$ROW_ID' in '$table_name has been updated to '$NEW_VALUE'."
+	# add log
                /bin/bash "./create_log" "update_data" "$database_name" "$USER"
-        else 
-        	echo "invaild value"
-        	exit 1
-        fi
     else
         echo "Table '$table_name' does not exist in database '$database_name'."
         exit 1

@@ -61,8 +61,19 @@ delete_all_data() {
     local database=$1
     local table=$2
     local table_path="Databases/$database/$table.txt"
-    rm -f "$table_path"
-    echo "All data deleted from $table."
+
+    if [[ -f "$table_path" ]]; then
+        temp_file=$(mktemp)  # Create a temporary file
+
+        # Extract the first line and overwrite the original file
+        head -n1 "$table_path" > "$temp_file"
+        mv "$temp_file" "$table_path"
+
+        echo "Deleted all lines except the first line in: $file_path"
+    else
+        echo "File does not exist: $file_path"
+        return 1
+    fi
     # add log
 /bin/bash "./create_log" "delete_data" "$database_name" "$USER"
 
@@ -114,7 +125,7 @@ echo "Listing all tables in database '$database_name':"
 list_tables "$database_name"
 
 # Read the table name from user input
-read -p "Enter the name of the table to insert data into: " table_name
+read -p "Enter the name of the table to delete data from: " table_name
 
 # Check if the table name is empty
 if [ -z "$table_name" ]; then
