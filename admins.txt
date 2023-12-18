@@ -46,3 +46,4 @@ gnome-initial-setup
 hplip
 gdm
 kalaya9
+

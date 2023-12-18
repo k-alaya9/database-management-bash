@@ -1,6 +1,0 @@
-ID,name,age
-1,khaled,22
-3,reham,22
-4,wassem,22
-5,rima,22
-6,shymaa,22

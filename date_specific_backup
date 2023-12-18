@@ -4,6 +4,12 @@ selected_database=$1  # First argument is the selected database
 backup_date=$2        # Second argument is the backup date
 compression_mode=$3   # Third argument is the compression mode
 
+# Check if the directory exists, create it if not
+if [ ! -d "/opt/Backups/DateSpecific" ]; then
+    mkdir "/opt/Backups/DateSpecific"
+fi
+
+
 backup_dir="/opt/Backups/DateSpecific/$selected_database"
 database_dir="Databases"
 

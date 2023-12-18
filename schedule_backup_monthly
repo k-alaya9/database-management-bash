@@ -2,7 +2,10 @@
 
 selected_database=$1  # First argument is the selected database
 compression_mode=$2   # Second argument is the compression mode
-
+# Check if the directory exists, create it if not
+if [ ! -d "/opt/Backups/Monthly" ]; then
+    mkdir "/opt/Backups/Monthly"
+fi
 backup_dir="/opt/Backups/Monthly/$selected_database"
 database_dir="Databases"
 

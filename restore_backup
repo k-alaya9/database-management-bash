@@ -1,29 +1,6 @@
 #!/bin/bash
 
-# Function to find the most recent backup by name
-find_most_recent_backup1() {
-    search_name=$1
-    backup_types=("Daily" "Weekly" "Monthly" "DateSpecific")
 
-    most_recent_backup=""
-    most_recent_time=0
-
-    for backup_type in "${backup_types[@]}"; do
-        backup_dir="/opt/Backups/$backup_type"
-        if [ -d "$backup_dir" ]; then
-            matches=($(ls "$backup_dir" | grep "$search_name"))
-            for match in "${matches[@]}"; do
-                backup_time=$(stat -c %Y "$backup_dir/$match")
-                if [ "$backup_time" -gt "$most_recent_time" ]; then
-                    most_recent_time=$backup_time
-                    most_recent_backup="$backup_type/$match"
-                fi
-            done
-        fi
-    done
-
-    echo "$most_recent_backup"
-}
 find_most_recent_backup() {
     database_name=$1
     backup_types=("Daily" "Weekly" "Monthly" "DateSpecific")
@@ -34,12 +11,12 @@ find_most_recent_backup() {
     for backup_type in "${backup_types[@]}"; do
         backup_dir="/opt/Backups/$backup_type"
         if [ -d "$backup_dir" ]; then
-            matches=($(ls "$backup_dir" | grep "$database_name"))
+            matches=($(find "$backup_dir/$database_name/" -maxdepth 1 -type f -name "*$database_name*"))
             for match in "${matches[@]}"; do
-                backup_time=$(stat -c %Y "$backup_dir/$match")
+                backup_time=$(stat -c %Y "$match")
                 if [ "$backup_time" -gt "$most_recent_time" ]; then
                     most_recent_time=$backup_time
-                    most_recent_backup="$backup_type/$match"
+                    most_recent_backup="$match"
                 fi
             done
         fi
@@ -68,7 +45,7 @@ restore_database() {
 
         # Copy the most recent backup to the new directory
         #cp -r "/opt/Backups/$most_recent_backup" "/home/test/database-management-bash/Databases/$database_name/"
-        unzip_file "/opt/Backups/$most_recent_backup" "/home/test/database-management-bash/"
+        unzip_file "$most_recent_backup" "/home/test/database-management-bash/Databases/"
         echo "Database '$database_name' restored successfully from the most recent backup ('$most_recent_backup')."
         # add log
         /bin/bash "./create_log" "restore_backup" "$database_name" "$USER"
