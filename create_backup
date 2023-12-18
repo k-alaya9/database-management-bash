@@ -41,14 +41,31 @@ list_databases() {
 # List available databases
 list_databases
 
-# Choose the database you want to create a backup for:
-read -p "Enter the name of the database you want to backup: " selected_database
+read -p "Enter 1 if you want to backup all databases 
+	 Enter 2 if you want to to backup a specific database :
+	 " op
+	 
+	 case "$op" in
+	 1) 
+	 selected_database=".."
+	 ;;
+	 2)
+	 	# Choose the database you want to create a backup for:
+		read -p "Enter the name of the database you want to backup: " selected_database
+		# Check if the selected database exists
+		if [ ! -d "$database_dir/$selected_database" ]; then
+    		echo "Database '$selected_database' does not exist."
+    		exit 1
+		fi
+		;;
+	*)
+		echo "invalid value"
+		exit 1
+		;;
+	esac	
+	
 
-# Check if the selected database exists
-if [ ! -d "$database_dir/$selected_database" ]; then
-    echo "Database '$selected_database' does not exist."
-    exit 1
-fi
+
 
 # Choose the backup type: scheduled or date-specific
 echo "Choose backup type:"
