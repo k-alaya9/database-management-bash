@@ -4,13 +4,17 @@ logs_directory="/opt/logs"
 
 # Check if the user is an owner or admin
 has_permission() {
-    if [ -r "$db" ] || [ -x "$db" ] || [ "$(id -Gn | grep -wq 'admins.txt')" ]; then
+    if [ -r "$logs_directory" ] || [ -x "$logs_directory" ] || [ "$(echo $USER | grep -q 'admins.txt')" ]; then
         return 0  # Return success if any condition is met
     else
         return 1  # Return failure if none of the conditions are met
     fi
 }
-
+# Check if the user is an owner or admin
+is_admin() {
+    grep -q "^$USER$" admins.txt
+    return $?
+}
 # Check if the 'logs' directory exists
 if [ ! -d "$logs_directory" ]; then
     echo "Error: Logs directory '$logs_directory' not found."
@@ -18,7 +22,7 @@ if [ ! -d "$logs_directory" ]; then
 fi
 
 # Check if the user is an owner or admin
-if  has_permission; then
+if ! is_admin; then
     echo "Permission denied. Only admins and owners can retrieve logs."
     exit 1
 fi
