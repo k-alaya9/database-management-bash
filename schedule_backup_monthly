@@ -3,7 +3,7 @@
 selected_database=$1  # First argument is the selected database
 compression_mode=$2   # Second argument is the compression mode
 
-backup_dir="/opt/Backups/Monthly"
+backup_dir="/opt/Backups/Monthly/$selected_database"
 database_dir="Databases"
 
 # Check if the directory exists, create it if not
@@ -18,7 +18,7 @@ if [ ! -d "$database_dir/$selected_database" ]; then
 fi
 
 # Schedule monthly backup on the 1st day of the month at 4:00 AM
-(crontab -l ; echo "0 4 1 * * /path/to/backup_monthly.sh $selected_database $compression_mode") | crontab -
+(crontab -l ; echo "0 4 1 * *  ./schedule_backup_monthly $selected_database $compression_mode") | crontab -
 
 # Get the current date for naming the backup
 current_date=$(date +\%Y\%m\%d)
@@ -27,16 +27,19 @@ case "$compression_mode" in
     zip)
         # Implement zip compression logic for monthly backup
         zip -r "$backup_dir/monthly_backup_${selected_database}_$current_date.zip" "$database_dir/$selected_database"
+        database_name="monthly_backup_${selected_database}_$current_date.zip"
         echo "Monthly backup for $selected_database completed successfully"
         ;;
     tar)
         # Implement tar compression logic for monthly backup
         tar cf "$backup_dir/monthly_backup_${selected_database}_$current_date.tar" -C "$database_dir" "$selected_database"
+        database_name="monthly_backup_${selected_database}_$current_date.tar"
         echo "Monthly backup for $selected_database completed successfully"
         ;;
     gzip)
         # Implement gzip compression logic for monthly backup
         tar czf "$backup_dir/monthly_backup_${selected_database}_$current_date.tar.gz" -C "$database_dir" "$selected_database"
+        database_name="monthly_backup_${selected_database}_$current_date.tar.gz"
         echo "Monthly backup for $selected_database completed successfully"
         ;;
     *)
@@ -44,7 +47,6 @@ case "$compression_mode" in
         exit 1
         ;;
 esac
-database_name="monthly_backup_${selected_database}_$current_date"
 # Call rotation script based on backup date : 
 /bin/bash "./rotate_backups_by_date" "Monthly" "$database_name" 
 

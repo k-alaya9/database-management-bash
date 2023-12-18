@@ -4,7 +4,7 @@ selected_database=$1  # First argument is the selected database
 backup_date=$2        # Second argument is the backup date
 compression_mode=$3   # Third argument is the compression mode
 
-backup_dir="/opt/Backups/DateSpecific"
+backup_dir="/opt/Backups/DateSpecific/$selected_database"
 database_dir="Databases"
 
 # Check if the directory exists, create it if not
@@ -39,9 +39,8 @@ case "$compression_mode" in
         exit 1
         ;;
 esac
-database_name="date_backup_${selected_database}_${backup_date}"
 # Call rotation script based on backup date : 
-/bin/bash "./rotate_backups_by_date" "DateSpecific" "$database_name"
+/bin/bash "./rotate_backups_by_date" "DateSpecific" "$selected_database"
  
 # Call rotation script based on backup size : 
-/bin/bash "./rotate_backups_by_size" "DateSpecific" "$database_name"
+/bin/bash "./rotate_backups_by_size" "DateSpecific" "$selected_database"

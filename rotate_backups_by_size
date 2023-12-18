@@ -1,31 +1,21 @@
 #!/bin/bash
 
 backup_type="$1" # Daily, Weekly, Monthly, Date Specific.
-selected_database="$2"  # Database name
+database_backup_dir="$2" 
 max_size=500  # Maximum backup size in megabytes
 
 # Check if the directory exists
-if [ ! -d "/opt/Backups/$backup_type" ]; then
-    echo "Error: Backup directory '/opt/Backups/$backup_type' not found."
-    exit 1
-fi
-# Check if there are any backup files
-if [ "$(ls -A)" ]; then
-    echo "No previous backup files found. Rotation by size not needed."
-    exit 0
-fi
-# Check if the database directory exists
-if [ ! -d "/opt/Backups/$backup_type/$selected_database" ]; then
-    echo "Error: Database directory '/opt/Backups/$backup_type/$selected_database' not found."
+if [ ! -d "/opt/Backups/$backup_type/$database_backup_dir" ]; then
+    echo "Error: Backup directory '/opt/Backups/$backup_type/$selected_database' not found."
     exit 1
 fi
 
 
 # Change to the backup directory
-cd "/opt/Backups/$backup_type/$selected_database" || exit
+cd "/opt/Backups/$backup_type/$database_backup_dir" || exit
 
 # Calculate the total size of the backup directory in megabytes
-total_size=$(du -smc . | grep -o -E '^[0-9]+')
+total_size=$(du -sm "/opt/Backups/$backup_type/$database_backup_dir" | awk '{print $1}')
 
 # Loop until the total size is below the maximum size
 while [ "$total_size" -gt "$max_size" ]; do

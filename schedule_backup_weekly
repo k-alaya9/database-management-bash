@@ -3,7 +3,7 @@
 selected_database=$1  # First argument is the selected database
 compression_mode=$2   # Second argument is the compression mode
 
-backup_dir="/opt/Backups/Weekly"
+backup_dir="/opt/Backups/Weekly/$selected_database"
 database_dir="Databases"
 
 # Check if the directory exists, create it if not
@@ -18,7 +18,7 @@ if [ ! -d "$database_dir/$selected_database" ]; then
 fi
 
 # Schedule weekly backup on Sundays at 3:00 AM
-(crontab -l ; echo "0 3 * * 0 /path/to/backup_weekly.sh $selected_database $compression_mode") | crontab -
+(crontab -l ; echo "0 3 * * 0 ./schedule_backup_weekly $selected_database $compression_mode") | crontab -
 
 # Get the current date for naming the backup
 current_date=$(date +\%Y\%m\%d)
@@ -44,9 +44,8 @@ case "$compression_mode" in
         exit 1
         ;;
 esac
-database_name="weekly_backup_${selected_database}_$current_date"
 # Call rotation script based on backup date : 
-/bin/bash "./rotate_backups_by_date" "Weekly" "$database_name" 
+/bin/bash "./rotate_backups_by_date" "Weekly" "$selected_database" 
 
 # Call rotation script based on backup size : 
-/bin/bash "./rotate_backups_by_size" "Weekly" "$database_name"
+/bin/bash "./rotate_backups_by_size" "Weekly" "$selected_database"
